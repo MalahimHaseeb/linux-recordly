@@ -37,7 +37,7 @@ jobs:
         run: npm ci
 
       - name: Build Linux (AppImage + DEB)
-        run: npm run build:linux
+        run: npm run build:linux -- --publish never
 
       - name: List release artifacts
         run: ls -lah release
