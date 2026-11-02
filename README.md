@@ -126,6 +126,18 @@ sudo apt install ./release/*.deb
 - If evdev cannot open devices, auto-zoom will fall back to dwell detection when possible, but click-based zooms require readable input devices.
 - If you prefer not to use evdev, use the **Ubuntu on Xorg** session and the original X11 input path.
 
+## Install from releases
+
+Download the latest `.deb` or `AppImage` from:
+
+https://github.com/MalahimHaseeb/linux-recordly/releases
+
+Then install the `.deb` with:
+
+```bash
+sudo apt install ./Recordly*.deb
+```
+
 ## GitHub automation
 
 Tagged releases automatically build a Linux DEB through:
