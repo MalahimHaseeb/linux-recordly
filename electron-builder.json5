@@ -99,6 +99,7 @@
     }
   },
   "linux": {
+    "maintainer": "Malahim Haseeb <malahimhaseeb@users.noreply.github.com>",
     "target": [
       "AppImage",
       "deb"
