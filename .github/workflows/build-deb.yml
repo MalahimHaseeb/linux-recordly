@@ -1,0 +1,56 @@
+name: Build Linux DEB
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux-deb:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            python3 \
+            libudev-dev \
+            libx11-dev \
+            libxkbfile-dev
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build Linux (AppImage + DEB)
+        run: npm run build:linux
+
+      - name: List release artifacts
+        run: ls -lah release
+
+      - name: Upload DEB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: recordly-linux-deb
+          path: release/*.deb
+
+      - name: Create GitHub Release and attach DEB
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.deb
+          generate_release_notes: true
