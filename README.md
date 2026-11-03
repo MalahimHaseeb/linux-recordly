@@ -15,6 +15,8 @@ This project adapts Recordly to work on Ubuntu/Wayland by:
 - improving Linux zoom suggestion logic
 - allowing Linux window captures to auto-zoom
 - adding `.deb` packaging and GitHub release automation
+- fixed the download video issue into mp4 format
+- added webcam and microphone toggle functionality during recording
 
 The goal is to make Recordly usable on Linux without forcing users to switch from Wayland to Xorg.
 
