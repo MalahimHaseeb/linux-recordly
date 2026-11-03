@@ -79,6 +79,8 @@ function LaunchWindowContent() {
 		countdownDelay,
 		setCountdownDelay,
 		preparePermissions,
+		toggleMicrophoneDuringRecording,
+		toggleWebcamDuringRecording,
 	} = useScreenRecorder();
 
 	const { elapsed, formatTime } = useRecordingTimer(recording, paused);
@@ -211,8 +213,10 @@ function LaunchWindowContent() {
 		<RecordingControls
 			paused={paused}
 			microphoneEnabled={microphoneEnabled}
+			webcamEnabled={webcamEnabled}
 			elapsed={elapsed}
-			onToggleMicrophone={() => setMicrophoneEnabled(!microphoneEnabled)}
+			onToggleMicrophone={toggleMicrophoneDuringRecording}
+			onToggleWebcam={toggleWebcamDuringRecording}
 			onPauseResume={paused ? resumeRecording : pauseRecording}
 			onStopRecording={toggleRecording}
 			onHideHud={() => window.electronAPI?.hudOverlayHide?.()}

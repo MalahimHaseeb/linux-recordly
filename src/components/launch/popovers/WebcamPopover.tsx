@@ -56,6 +56,13 @@ export function WebcamPopover({
 				if (disabled) {
 					return;
 				}
+				if (webcamEnabled) {
+					// Clicking the active webcam icon toggles it off; the
+					// popover only opens while the webcam is off, so devices
+					// can be re-selected and the webcam re-enabled there.
+					onDisableWebcam();
+					return;
+				}
 				requestOpen(POPOVER_ID);
 			}}
 			trigger={trigger}

@@ -46,6 +46,13 @@ export function MicPopover({
 				if (disabled) {
 					return;
 				}
+				if (microphoneEnabled) {
+					// Clicking the active microphone icon toggles it off; the
+					// popover only opens while the mic is off, so devices can
+					// be re-selected and the mic re-enabled from there.
+					onDisableMicrophone();
+					return;
+				}
 				requestOpen(POPOVER_ID);
 			}}
 			trigger={trigger}

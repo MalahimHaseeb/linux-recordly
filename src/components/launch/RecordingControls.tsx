@@ -4,6 +4,8 @@ import {
 	MinusIcon,
 	PauseIcon,
 	PlayIcon,
+	VideoCameraIcon,
+	VideoCameraSlashIcon,
 	XIcon,
 } from "@phosphor-icons/react";
 import { useMemo } from "react";
@@ -15,8 +17,10 @@ import styles from "./LaunchWindow.module.css";
 interface RecordingControlsProps {
 	paused: boolean;
 	microphoneEnabled: boolean;
-	elapsed: number;
+	webcamEnabled?: boolean;
 	onToggleMicrophone: () => void;
+	onToggleWebcam?: () => void;
+	elapsed: number;
 	onPauseResume: () => void;
 	onStopRecording: () => void;
 	onHideHud: () => void;
@@ -27,8 +31,10 @@ interface RecordingControlsProps {
 export const RecordingControls = ({
 	paused,
 	microphoneEnabled,
-	elapsed,
+	webcamEnabled,
 	onToggleMicrophone,
+	onToggleWebcam,
+	elapsed,
 	onPauseResume,
 	onStopRecording,
 	onHideHud,
@@ -65,23 +71,53 @@ export const RecordingControls = ({
 
 				<Separator orientation="vertical" className="mx-[5px] h-6" />
 
-				<span title={t("recording.micToggleDisabledTip")}>
-					<Button
-						variant="ghost"
-						size="icon"
-						iconSize="lg"
-						className={microphoneEnabled ? styles.ibActive : ""}
-						aria-label={t("recording.micToggleDisabledTip")}
-						disabled
-						onClick={onToggleMicrophone}
-					>
-						{microphoneEnabled ? (
-							<MicrophoneIcon size={18} />
-						) : (
-							<MicrophoneSlashIcon size={18} />
-						)}
-					</Button>
-				</span>
+				<Button
+					variant="ghost"
+					size="icon"
+					iconSize="lg"
+					className={microphoneEnabled ? styles.ibActive : ""}
+					aria-label={
+						microphoneEnabled
+							? t("recording.disableMicrophone")
+							: t("recording.enableMicrophone")
+					}
+					title={
+						microphoneEnabled
+							? t("recording.disableMicrophone")
+							: t("recording.enableMicrophone")
+					}
+					onClick={onToggleMicrophone}
+				>
+					{microphoneEnabled ? (
+						<MicrophoneIcon size={18} />
+					) : (
+						<MicrophoneSlashIcon size={18} />
+					)}
+				</Button>
+
+				<Button
+					variant="ghost"
+					size="icon"
+					iconSize="lg"
+					className={webcamEnabled ? styles.ibActive : ""}
+					aria-label={
+						webcamEnabled
+							? t("recording.disableWebcam")
+							: t("recording.enableWebcam")
+					}
+					title={
+						webcamEnabled
+							? t("recording.disableWebcam")
+							: t("recording.enableWebcam")
+					}
+					onClick={onToggleWebcam}
+				>
+					{webcamEnabled ? (
+						<VideoCameraIcon size={18} />
+					) : (
+						<VideoCameraSlashIcon size={18} />
+					)}
+				</Button>
 
 				<Separator orientation="vertical" className="mx-[5px] h-6" />
 
@@ -137,8 +173,10 @@ export const RecordingControls = ({
 	}, [
 		paused,
 		microphoneEnabled,
+		webcamEnabled,
 		elapsed,
 		onToggleMicrophone,
+		onToggleWebcam,
 		onPauseResume,
 		onStopRecording,
 		onHideHud,

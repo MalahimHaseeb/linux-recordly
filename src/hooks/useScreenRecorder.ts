@@ -149,6 +149,8 @@ type UseScreenRecorderReturn = {
 	setWebcamDeviceId: (deviceId: string | undefined) => void;
 	countdownDelay: number;
 	setCountdownDelay: (delay: number) => void;
+	toggleMicrophoneDuringRecording: () => void;
+	toggleWebcamDuringRecording: () => void;
 };
 
 function getErrorMessage(error: unknown) {
@@ -941,6 +943,37 @@ export function useScreenRecorder(): UseScreenRecorderReturn {
 		[resetMicFallbackTimingDiagnostics],
 	);
 
+	const getLiveMicrophoneTracks = useCallback(() => {
+		return [
+			...(microphoneStream.current?.getAudioTracks() ?? []),
+			...(micFallbackRecorder.current?.stream?.getAudioTracks() ?? []),
+		];
+	}, []);
+
+	/**
+	 * Toggle the microphone on/off while a recording is running. Works purely by
+	 * enabling/disabling the underlying MediaStreamTracks, so the mic can be
+	 * muted and unmuted mid-recording without restarting anything. When mic and
+	 * system audio are mixed, the mix sources the same mic track, so system
+	 * audio is never affected. Re-enabling is only possible while the mic track
+	 * captured at recording start is still alive.
+	 */
+	const toggleMicrophoneDuringRecording = useCallback(() => {
+		const tracks = getLiveMicrophoneTracks();
+		if (tracks.length === 0) {
+			toast.info(
+				"To add microphone audio, stop the recording and enable a microphone first.",
+				{ id: "recordly-mic-toggle-unavailable", duration: 8000 },
+			);
+			return;
+		}
+		const next = !microphoneEnabled;
+		tracks.forEach((track) => {
+			track.enabled = next;
+		});
+		setMicrophoneEnabled(next);
+	}, [getLiveMicrophoneTracks, microphoneEnabled]);
+
 	const stopWebcamRecorder = useCallback(async () => {
 		const recorder = webcamRecorder.current;
 		const pending = webcamStopPromise.current;
@@ -1124,6 +1157,57 @@ export function useScreenRecorder(): UseScreenRecorderReturn {
 			recorder.start(RECORDER_TIMESLICE_MS);
 		}
 	}, []);
+
+	/**
+	 * Toggle the webcam while a recording is running.
+	 *
+	 * - With a live webcam recorder (webcam was on when this recording
+	 *   started): "off" only mutes the live video track and "on" unmutes it.
+	 *   The recorder keeps running the whole time, so the webcam file stays a
+	 *   single continuous file whose timestamps remain aligned with the screen
+	 *   recording, and nothing captured earlier is lost. The webcam preview
+	 *   hides/shows because it is driven by `webcamEnabled`.
+	 * - With no webcam recorder in this session (webcam was off when the
+	 *   recording started): turning it on attaches a fresh webcam capture that
+	 *   aligns with the current recording time.
+	 */
+	const toggleWebcamDuringRecording = useCallback(async () => {
+		if (webcamEnabled) {
+			webcamStream.current?.getVideoTracks().forEach((track) => {
+				track.enabled = false;
+			});
+			setWebcamEnabled(false);
+			return;
+		}
+
+		const existingRecorder = webcamRecorder.current;
+		if (existingRecorder && existingRecorder.state !== "inactive") {
+			webcamStream.current?.getVideoTracks().forEach((track) => {
+				track.enabled = true;
+			});
+			setWebcamEnabled(true);
+			return;
+		}
+
+		setWebcamEnabled(true);
+		await prepareWebcamRecorder();
+		if (!webcamRecorder.current) {
+			// Camera failed to open; keep the recording running without it.
+			setWebcamEnabled(false);
+			toast.error("Failed to start the webcam. The recording continues without it.");
+			return;
+		}
+		beginWebcamCapture();
+		const webcamStartAt = webcamStartTime.current;
+		webcamTimeOffsetMs.current = webcamStartAt
+			? getRecordingDurationMs(webcamStartAt)
+			: 0;
+	}, [
+		beginWebcamCapture,
+		getRecordingDurationMs,
+		prepareWebcamRecorder,
+		webcamEnabled,
+	]);
 
 	const prepareRecordingStart = useCallback(async () => {
 		const platform = await window.electronAPI.getPlatform();
@@ -2446,5 +2530,7 @@ export function useScreenRecorder(): UseScreenRecorderReturn {
 		setWebcamDeviceId: persistWebcamDeviceId,
 		countdownDelay,
 		setCountdownDelay,
+		toggleMicrophoneDuringRecording,
+		toggleWebcamDuringRecording,
 	};
 }
