@@ -6,6 +6,7 @@ import { getActiveClipIdAtSourceTime, isClipMutedById } from "./clipAudio";
 import { useAudioPreviewSync } from "./useAudioPreviewSync";
 import { useClipAudioSettingsController } from "./useClipAudioSettingsController";
 import { useSourceAudioFallback } from "./useSourceAudioFallback";
+import { useVoiceCleaning } from "./useVoiceCleaning";
 
 function extractLocalPathFromMediaServerUrl(input: string | null | undefined): string | null {
 	if (!input) return null;
@@ -42,6 +43,7 @@ interface UseVideoEditorAudioParams {
 	isPlaying: boolean;
 	previewVolume: number;
 	sourceAudioFallbackRefreshKey?: number;
+	onVoiceCleanupChange?: () => void;
 	summarizeErrorMessage: (message: string) => string;
 	onSourceFallbackLoadError: (error: unknown) => void;
 }
@@ -62,6 +64,7 @@ export function useVideoEditorAudio({
 	isPlaying,
 	previewVolume,
 	sourceAudioFallbackRefreshKey = 0,
+	onVoiceCleanupChange,
 	summarizeErrorMessage,
 	onSourceFallbackLoadError,
 }: UseVideoEditorAudioParams) {
@@ -69,6 +72,13 @@ export function useVideoEditorAudio({
 		() => extractLocalPathFromMediaServerUrl(currentSourcePath) ?? currentSourcePath,
 		[currentSourcePath],
 	);
+
+	const voiceCleaning = useVoiceCleaning({
+		currentSourcePath: fallbackLookupSourcePath,
+		refreshKey: sourceAudioFallbackRefreshKey,
+		onChanged: onVoiceCleanupChange,
+		summarizeErrorMessage,
+	});
 
 	const { sourceAudioFallbackPaths, sourceAudioFallbackStartDelayMsByPath } =
 		useSourceAudioFallback({
@@ -145,5 +155,6 @@ export function useVideoEditorAudio({
 		onSelectedClipSourceAudioTrackNormalizeChange,
 		embeddedSourcePreviewGain,
 		getSourceTrackPreviewGain,
+		voiceCleaning,
 	};
 }

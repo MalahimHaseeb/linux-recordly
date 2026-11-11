@@ -6,6 +6,7 @@ import { getFfmpegBinaryPath, getFfprobeBinaryPath } from "../ffmpeg/binary";
 import { lastNativeCaptureDiagnostics, setLastNativeCaptureDiagnostics } from "../state";
 import type { CompanionAudioCandidate, NativeCaptureDiagnostics } from "../types";
 import { parseJsonWithByteOrderMark } from "../utils";
+import { getEmbeddedVoiceCleanedPath, getPreferredMicSidecarPath } from "./voiceCleaning";
 
 const execFileAsync = promisify(execFile);
 export const MIN_VALID_RECORDED_VIDEO_BYTES = 1024;
@@ -421,9 +422,12 @@ export async function getUsableCompanionAudioCandidates(
 	for (const layout of COMPANION_AUDIO_LAYOUTS) {
 		const systemPath = `${basePath}${layout.systemSuffix}`;
 		const micPath = `${basePath}${layout.micSuffix}`;
+		// Route playback/export through the denoised copy when the user chose to
+		// clean the microphone track. The original sidecar stays untouched.
+		const preferredMicPath = await getPreferredMicSidecarPath(micPath);
 		const usablePaths: string[] = [];
 
-		for (const companionPath of [systemPath, micPath]) {
+		for (const companionPath of [systemPath, preferredMicPath]) {
 			try {
 				const stat = await fs.stat(companionPath);
 				if (stat.size > 0) {
@@ -438,7 +442,7 @@ export async function getUsableCompanionAudioCandidates(
 			candidates.push({
 				platform: layout.platform,
 				systemPath,
-				micPath,
+				micPath: preferredMicPath,
 				usablePaths,
 			});
 		}
@@ -498,8 +502,22 @@ export async function getCompanionAudioFallbackPaths(videoPath: string) {
 
 export async function getCompanionAudioFallbackInfo(videoPath: string) {
 	const companionCandidates = await getUsableCompanionAudioCandidates(videoPath);
-	if (companionCandidates.length === 0) {
+	const mixedVoiceCleanPath = getEmbeddedVoiceCleanedPath(videoPath);
+	const hasMixedVoiceClean = ((await getFileSizeIfPresent(mixedVoiceCleanPath)) ?? 0) > 0;
+
+	if (companionCandidates.length === 0 && !hasMixedVoiceClean) {
 		return { paths: [], startDelayMsByPath: {} };
+	}
+
+	// A cleaned copy of the embedded/mixed audio replaces the video's own audio
+	// track. This is the path used on Linux, where browser captures mix the
+	// microphone directly into the video instead of writing a mic sidecar.
+	if (hasMixedVoiceClean && companionCandidates.length === 0) {
+		const hasEmbeddedAudio = await hasEmbeddedAudioStream(videoPath);
+		return {
+			paths: hasEmbeddedAudio ? [videoPath, mixedVoiceCleanPath] : [mixedVoiceCleanPath],
+			startDelayMsByPath: {},
+		};
 	}
 
 	let paths: string[];

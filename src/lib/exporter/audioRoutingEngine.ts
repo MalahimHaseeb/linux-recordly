@@ -68,6 +68,7 @@ export function buildResolvedAudioPlan(input: {
 	if (pathsByTrack.mic) playbackPaths.push(pathsByTrack.mic);
 	if (!hasDedicatedTracks && pathsByTrack.mixed) playbackPaths.push(pathsByTrack.mixed);
 
+	const hasMixedSourceReplacement = Boolean(pathsByTrack.mixed);
 	const includeEmbeddedInExport = !pathsByTrack.system && !pathsByTrack.mixed;
 	const resolvedRegions = (input.audioRegions ?? [])
 		.slice()
@@ -123,7 +124,8 @@ export function buildResolvedAudioPlan(input: {
 		hasEmbeddedSourceAudio,
 		pathsByTrack,
 		playbackPaths,
-		muteEmbeddedPreview: hasDedicatedTracks && !includeEmbeddedInExport,
+		muteEmbeddedPreview:
+			(hasDedicatedTracks || hasMixedSourceReplacement) && !includeEmbeddedInExport,
 		includeEmbeddedInExport,
 		tracks,
 		masterGain: clampGain(input.masterGain ?? 1, 1),

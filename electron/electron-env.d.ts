@@ -560,6 +560,26 @@ interface Window {
 			startDelayMsByPath?: Record<string, number>;
 			error?: string;
 		}>;
+		getVoiceCleanStatus: (videoPath: string) => Promise<{
+			success: boolean;
+			available: boolean;
+			isCleaned: boolean;
+			micPath?: string | null;
+			cleanedPath?: string | null;
+			error?: string;
+		}>;
+		cleanVoiceTrack: (
+			videoPath: string,
+			options?: { strength?: "light" | "balanced" | "strong" },
+		) => Promise<{
+			success: boolean;
+			path?: string;
+			error?: string;
+		}>;
+		restoreVoiceTrack: (videoPath: string) => Promise<{
+			success: boolean;
+			error?: string;
+		}>;
 		setRecordingState: (recording: boolean) => Promise<void>;
 		getCursorTelemetry: (videoPath?: string) => Promise<{
 			success: boolean;

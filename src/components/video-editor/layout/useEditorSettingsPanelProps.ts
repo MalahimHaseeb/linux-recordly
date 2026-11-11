@@ -105,6 +105,7 @@ export function useEditorSettingsPanelProps(input: Input): ComponentProps<typeof
 		sourceAudioTrackSettings: audio.selectedClipSourceAudioTrackSettings,
 		onSourceAudioTrackVolumeChange: audio.onSelectedClipSourceAudioTrackVolumeChange,
 		onSourceAudioTrackNormalizeChange: audio.onSelectedClipSourceAudioTrackNormalizeChange,
+		voiceCleaning: audio.voiceCleaning,
 		selectedAudioId: timeline.selectedAudioId,
 		selectedAudioVolume: selectedAudio?.volume ?? null,
 		selectedAudioNormalize:

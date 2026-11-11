@@ -254,7 +254,10 @@
 		"systemLabel": "Systeemaudio",
 		"micLabel": "Microfoon",
 		"mixedLabel": "Bron",
-		"deleteRegion": "Audio verwijderen"
+		"deleteRegion": "Audio verwijderen",
+		"cleanVoice": "Stem opschonen",
+		"cleanVoiceDescription": "Verwijder achtergrondgeluid van de microfoonspoor.",
+		"cleaningVoice": "Stem opschonen..."
 	},
 	"updates": {
 		"experimentalDescription": "Je hebt experimentele updates ingeschakeld, dus je kunt de nieuwste update van Recordly testen voordat die breed beschikbaar is.",

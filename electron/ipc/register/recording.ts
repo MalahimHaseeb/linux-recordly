@@ -49,7 +49,7 @@ import {
 	getSystemCursorHelperSourcePath,
 	getWindowsCaptureExePath,
 } from "../paths/binaries";
-import { rememberApprovedLocalReadPath } from "../project/manager";
+import { isAllowedLocalReadPath, rememberApprovedLocalReadPath } from "../project/manager";
 import {
 	getBrowserMicSidecarFilters,
 	shouldKeepRecordingAudioSidecars,
@@ -57,6 +57,7 @@ import {
 import {
 	getCompanionAudioFallbackInfo,
 	getFileSizeIfPresent,
+	hasEmbeddedAudioStream,
 	type MicrophoneChunkTimingEvent,
 	type MicrophonePauseInterval,
 	type RecordingDiagnosticsSnapshot,
@@ -80,6 +81,11 @@ import {
 	waitForNativeCaptureStop,
 } from "../recording/mac";
 import { resolveRecordedVideoStoragePath } from "../recording/storagePath";
+import {
+	cleanVoiceTrack,
+	getVoiceCleanStatus,
+	restoreVoiceTrack,
+} from "../recording/voiceCleaning";
 import {
 	attachWindowsCaptureLifecycle,
 	isNativeWindowsCaptureAvailable,
@@ -1454,6 +1460,94 @@ export function registerRecordingHandlers(
 		} catch (error) {
 			console.error("Failed to resolve companion audio fallback paths:", error);
 			return { success: false, paths: [], startDelayMsByPath: {}, error: String(error) };
+		}
+	});
+
+	ipcMain.handle("get-voice-clean-status", async (_event, videoPath: string) => {
+		if (!videoPath || typeof videoPath !== "string" || !isAllowedLocalReadPath(videoPath)) {
+			return { success: true, available: false, isCleaned: false };
+		}
+
+		try {
+			const [{ paths }, hasEmbeddedAudio] = await Promise.all([
+				getCompanionAudioFallbackInfo(videoPath),
+				hasEmbeddedAudioStream(videoPath),
+			]);
+			const micIsRoutedSeparately = paths.some((audioPath) => /\.mic\./i.test(audioPath));
+			const status = await getVoiceCleanStatus(videoPath, {
+				hasEmbeddedAudio,
+				useMicSidecar: micIsRoutedSeparately,
+			});
+			if (!status.available) {
+				return { success: true, ...status };
+			}
+
+			// Linux browser captures mix the microphone into the video, so there
+			// is no mic sidecar to route. In that case clean the embedded audio
+			// track instead of hiding the feature.
+			return {
+				success: true,
+				...status,
+				available: micIsRoutedSeparately || hasEmbeddedAudio || status.isCleaned,
+			};
+		} catch (error) {
+			console.error("Failed to read voice cleanup status:", error);
+			return {
+				success: false,
+				available: false,
+				isCleaned: false,
+				error: String(error),
+			};
+		}
+	});
+
+	ipcMain.handle(
+		"clean-voice-track",
+		async (_event, videoPath: string, options?: { strength?: unknown }) => {
+			if (!videoPath || typeof videoPath !== "string") {
+				return { success: false, error: "A valid video path is required." };
+			}
+			if (!isAllowedLocalReadPath(videoPath)) {
+				return { success: false, error: "This video is not available for cleaning." };
+			}
+
+			try {
+				const [{ paths }, hasEmbeddedAudio] = await Promise.all([
+					getCompanionAudioFallbackInfo(videoPath),
+					hasEmbeddedAudioStream(videoPath),
+				]);
+				const micIsRoutedSeparately = paths.some((audioPath) =>
+					/\.mic\./i.test(audioPath),
+				);
+				const result = await cleanVoiceTrack(videoPath, {
+					...options,
+					hasEmbeddedAudio,
+					useMicSidecar: micIsRoutedSeparately,
+				});
+				if (result.success) {
+					await rememberApprovedLocalReadPath(result.path);
+				}
+				return result;
+			} catch (error) {
+				console.error("Failed to clean voice track:", error);
+				return { success: false, error: String(error) };
+			}
+		},
+	);
+
+	ipcMain.handle("restore-voice-track", async (_event, videoPath: string) => {
+		if (!videoPath || typeof videoPath !== "string") {
+			return { success: false, error: "A valid video path is required." };
+		}
+		if (!isAllowedLocalReadPath(videoPath)) {
+			return { success: false, error: "This video is not available for cleaning." };
+		}
+
+		try {
+			return await restoreVoiceTrack(videoPath);
+		} catch (error) {
+			console.error("Failed to restore original voice track:", error);
+			return { success: false, error: String(error) };
 		}
 	});
 

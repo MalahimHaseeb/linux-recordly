@@ -182,7 +182,13 @@ export async function pruneAutoRecordings(exemptPaths: string[] = []) {
 			);
 			for (const suffix of companionSuffixes) {
 				await fs.rm(base + suffix, { force: true }).catch(() => undefined);
+				await fs.rm(`${base}${suffix}.json`, { force: true }).catch(() => undefined);
 			}
+			// Denoised microphone copies created by the clean-voice feature.
+			await fs.rm(`${base}.mic.cleaned.wav`, { force: true }).catch(() => undefined);
+			await fs.rm(`${base}.mic.cleaned.wav.json`, { force: true }).catch(() => undefined);
+			await fs.rm(`${base}.mixed.cleaned.wav`, { force: true }).catch(() => undefined);
+			await fs.rm(`${base}.mixed.cleaned.wav.json`, { force: true }).catch(() => undefined);
 		} catch (error) {
 			console.warn("Failed to prune old auto recording:", entry.filePath, error);
 		}

@@ -254,7 +254,10 @@
 		"systemLabel": "系统声音",
 		"micLabel": "麦克风",
 		"mixedLabel": "来源",
-		"deleteRegion": "删除音频"
+		"deleteRegion": "删除音频",
+		"cleanVoice": "净化人声",
+		"cleanVoiceDescription": "去除麦克风音轨中的背景噪音。",
+		"cleaningVoice": "正在净化人声..."
 	},
 	"updates": {
 		"experimentalDescription": "你已选择接收实验性更新，因此可以在 Recordly 最新更新广泛发布之前选择先行测试。",

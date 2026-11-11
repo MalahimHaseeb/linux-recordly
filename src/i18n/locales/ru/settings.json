@@ -254,7 +254,10 @@
 		"systemLabel": "Системный звук",
 		"micLabel": "Микрофон",
 		"mixedLabel": "Источник",
-		"deleteRegion": "Удалить аудио"
+		"deleteRegion": "Удалить аудио",
+		"cleanVoice": "Очистить голос",
+		"cleanVoiceDescription": "Удалить фоновый шум с дорожки микрофона.",
+		"cleaningVoice": "Очистка голоса..."
 	},
 	"updates": {
 		"title": "Обновления",

@@ -74,6 +74,9 @@ export function useTimelineEditingController(input: Input) {
 		pendingFreshRecordingAutoZoomPathRef: input.pendingFreshRecordingAutoZoomPathRef,
 		autoSuggestedVideoPathRef: input.autoSuggestedVideoPathRef,
 	});
+	const handleVoiceCleanupChange = useCallback(() => {
+		input.timeline.setSourceAudioFallbackRefreshKey((key) => key + 1);
+	}, [input.timeline.setSourceAudioFallbackRefreshKey]);
 	const projection = useTimelineProjection({
 		timeline,
 		duration: input.duration,
@@ -99,6 +102,7 @@ export function useTimelineEditingController(input: Input) {
 		isPlaying: input.isPlaying,
 		previewVolume: input.previewVolume,
 		sourceAudioFallbackRefreshKey: timeline.sourceAudioFallbackRefreshKey,
+		onVoiceCleanupChange: handleVoiceCleanupChange,
 		summarizeErrorMessage,
 		onSourceFallbackLoadError: handleSourceFallbackLoadError,
 	});

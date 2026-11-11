@@ -254,7 +254,10 @@
 		"systemLabel": "Quellsystem",
 		"micLabel": "Quellmikrofon",
 		"mixedLabel": "Quelle",
-		"deleteRegion": "Audio löschen"
+		"deleteRegion": "Audio löschen",
+		"cleanVoice": "Stimme bereinigen",
+		"cleanVoiceDescription": "Hintergrundgeräusche der Mikrofon-Spur entfernen.",
+		"cleaningVoice": "Stimme wird bereinigt..."
 	},
 	"updates": {
 		"experimentalDescription": "Sie haben experimentelle Updates aktiviert und können daher das neueste Update von Recordly testen, bevor es allgemein verfügbar ist.",

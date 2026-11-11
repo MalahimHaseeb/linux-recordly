@@ -254,7 +254,10 @@
 		"systemLabel": "Son système",
 		"micLabel": "Microphone",
 		"mixedLabel": "Source",
-		"deleteRegion": "Supprimer la zone audio"
+		"deleteRegion": "Supprimer la zone audio",
+		"cleanVoice": "Nettoyer la voix",
+		"cleanVoiceDescription": "Supprimez le bruit de fond de la piste micro.",
+		"cleaningVoice": "Nettoyage de la voix..."
 	},
 	"updates": {
 		"experimentalDescription": "Vous avez activé les mises à jour expérimentales, vous pouvez donc tester la dernière mise à jour de Recordly avant sa disponibilité générale.",

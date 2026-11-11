@@ -100,6 +100,35 @@ describe("getCompanionAudioFallbackPaths", () => {
 		]);
 	});
 
+	it("uses the cleaned microphone sidecar when one is available", async () => {
+		const videoPath = path.join(tempRoot, "recording.mp4");
+		const micPath = path.join(tempRoot, "recording.mic.wav");
+		const cleanedMicPath = path.join(tempRoot, "recording.mic.cleaned.wav");
+
+		await Promise.all([
+			fs.writeFile(videoPath, "video"),
+			fs.writeFile(micPath, "mic"),
+			fs.writeFile(cleanedMicPath, "cleaned-mic"),
+		]);
+
+		execFileMock.mockImplementation(
+			(
+				_file: string,
+				_args: string[],
+				_options: Record<string, unknown>,
+				callback: ExecFileCallback,
+			) => {
+				const error = new Error("ffmpeg probe failed") as Error & { stderr?: string };
+				error.stderr = "Stream #0:0: Video: h264";
+				callback(error, "", error.stderr);
+			},
+		);
+
+		const { getCompanionAudioFallbackPaths } = await import("./diagnostics");
+
+		await expect(getCompanionAudioFallbackPaths(videoPath)).resolves.toEqual([cleanedMicPath]);
+	});
+
 	it("keeps the embedded source audio and adds the mic companion when both are present", async () => {
 		const videoPath = path.join(tempRoot, "recording.mp4");
 		const systemPath = path.join(tempRoot, "recording.system.wav");

@@ -2,6 +2,7 @@ import {
 	CursorClick,
 	Palette,
 	PresentationChart,
+	SpinnerGap,
 	Trash as Trash2,
 	UploadSimple as Upload,
 	X,
@@ -531,6 +532,12 @@ interface SettingsPanelProps {
 	sourceAudioTrackSettings?: Record<string, { volume: number; normalize: boolean }>;
 	onSourceAudioTrackVolumeChange?: (id: string, volume: number) => void;
 	onSourceAudioTrackNormalizeChange?: (id: string, normalize: boolean) => void;
+	voiceCleaning?: {
+		available: boolean;
+		isCleaned: boolean;
+		isProcessing: boolean;
+		onCleanVoiceChange: (enabled: boolean) => void;
+	};
 	onClipDelete?: (id: string) => void;
 	selectedAudioId?: string | null;
 	selectedAudioVolume?: number | null;
@@ -991,6 +998,7 @@ export function SettingsPanel({
 	sourceAudioTrackSettings = {},
 	onSourceAudioTrackVolumeChange,
 	onSourceAudioTrackNormalizeChange,
+	voiceCleaning,
 	onClipDelete,
 	selectedAudioId,
 	selectedAudioVolume,
@@ -3149,6 +3157,38 @@ export function SettingsPanel({
 											className="data-[state=checked]:bg-[#06b6d4] scale-75"
 										/>
 									</div>
+									{(track.id === "mic" || track.id === "mixed") &&
+										voiceCleaning?.available && (
+										<div className="mb-2 flex items-center justify-between gap-2 rounded-lg bg-foreground/[0.03] px-2.5 py-1.5">
+											<div className="min-w-0">
+												<span className="text-[10px] text-muted-foreground">
+													{tSettings("audio.cleanVoice", "Clean voice")}
+												</span>
+												<p className="mt-0.5 text-[9px] leading-3 text-muted-foreground/50">
+													{voiceCleaning.isProcessing
+														? tSettings(
+																"audio.cleaningVoice",
+																"Cleaning voice…",
+															)
+														: tSettings(
+																"audio.cleanVoiceDescription",
+																"Remove background noise from the microphone track.",
+															)}
+												</p>
+											</div>
+											{voiceCleaning.isProcessing ? (
+												<SpinnerGap className="h-3.5 w-3.5 flex-shrink-0 animate-spin text-muted-foreground" />
+											) : (
+												<Switch
+													checked={voiceCleaning.isCleaned}
+													onCheckedChange={
+														voiceCleaning.onCleanVoiceChange
+													}
+													className="data-[state=checked]:bg-[#06b6d4] scale-75"
+												/>
+											)}
+										</div>
+									)}
 									<SliderControl
 										label={tSettings("audio.volume", "Volume")}
 										value={settings.volume}

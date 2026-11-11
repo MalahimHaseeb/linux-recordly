@@ -260,6 +260,9 @@
 		"systemLabel": "Source System",
 		"micLabel": "Source Mic",
 		"mixedLabel": "Source",
-		"deleteRegion": "Delete Audio"
+		"deleteRegion": "Delete Audio",
+		"cleanVoice": "Clean voice",
+		"cleanVoiceDescription": "Remove background noise from the microphone track.",
+		"cleaningVoice": "Cleaning voice..."
 	}
 }

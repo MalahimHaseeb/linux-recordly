@@ -476,6 +476,32 @@ contextBridge.exposeInMainWorld("electronAPI", {
 	getVideoAudioFallbackPaths: (videoPath: string) => {
 		return ipcRenderer.invoke("get-video-audio-fallback-paths", videoPath);
 	},
+	getVoiceCleanStatus: (videoPath: string) => {
+		return ipcRenderer.invoke("get-voice-clean-status", videoPath) as Promise<{
+			success: boolean;
+			available: boolean;
+			isCleaned: boolean;
+			micPath?: string | null;
+			cleanedPath?: string | null;
+			error?: string;
+		}>;
+	},
+	cleanVoiceTrack: (
+		videoPath: string,
+		options?: { strength?: "light" | "balanced" | "strong" },
+	) => {
+		return ipcRenderer.invoke("clean-voice-track", videoPath, options) as Promise<{
+			success: boolean;
+			path?: string;
+			error?: string;
+		}>;
+	},
+	restoreVoiceTrack: (videoPath: string) => {
+		return ipcRenderer.invoke("restore-voice-track", videoPath) as Promise<{
+			success: boolean;
+			error?: string;
+		}>;
+	},
 	getSources: async (opts: Electron.SourcesOptions) => {
 		return await ipcRenderer.invoke("get-sources", opts);
 	},
