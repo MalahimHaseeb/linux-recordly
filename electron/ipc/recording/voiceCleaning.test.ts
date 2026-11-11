@@ -68,9 +68,9 @@ describe("voice cleaning", () => {
 	it("uses progressively stronger noise-reduction filters", async () => {
 		const { getVoiceCleanupFilters } = await import("./voiceCleaning");
 
-		expect(getVoiceCleanupFilters("light").join(",")).toContain("afftdn=nr=12");
-		expect(getVoiceCleanupFilters("balanced").join(",")).toContain("afftdn=nr=20");
-		expect(getVoiceCleanupFilters("strong").join(",")).toContain("afftdn=nr=28");
+		expect(getVoiceCleanupFilters("light").join(",")).toContain("afftdn=nr=14");
+		expect(getVoiceCleanupFilters("balanced").join(",")).toContain("afftdn=nr=22");
+		expect(getVoiceCleanupFilters("strong").join(",")).toContain("afftdn=nr=30");
 		expect(getVoiceCleanupFilters("strong").join(",")).toContain(
 			"aresample=async=1:first_pts=0",
 		);
